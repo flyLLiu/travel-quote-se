@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process'
 import { createServer } from 'node:http'
 import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { readFileSync } from 'node:fs'
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path'
 import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
@@ -12,7 +13,7 @@ const APP_DIR = join(here, 'app')
 const HOST = '127.0.0.1'
 const PORT = 17866
 const APP_ID = 'travel-quote-se'
-const VERSION = '0.1.0'
+const VERSION = JSON.parse(readFileSync(join(here, 'package.json'), 'utf8')).version
 const STATE_FILE = join(process.env.DSH_PROFILE_DIR || join(homedir(), '.dsh'), 'travel-quote-se-state.json')
 const LEASE_TTL = 2_000
 let serverPromise = null
