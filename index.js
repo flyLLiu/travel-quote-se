@@ -109,7 +109,7 @@ export function apply(ctx) {
     }
   })
   ctx.effect(() => ctx.commands.register({
-    name: 'tq',
+    name: 'tqse',
     description: '打开游乐 Svelte 本地报价应用',
     handler: async () => {
       try {

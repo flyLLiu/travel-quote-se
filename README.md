@@ -10,7 +10,7 @@ npm install @davidmaxlll/travel-quote-se@beta
 
 ## 使用
 
-安装后点击侧边栏「游乐 Svelte」，或使用 DSH 命令 `/tq`。
+安装后点击侧边栏「游乐 Svelte」，或使用 DSH 命令 `/tqse`。
 
 应用地址：
 
