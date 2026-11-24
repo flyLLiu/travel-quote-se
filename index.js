@@ -14,6 +14,7 @@ const PORT = 17866
 const APP_ID = 'travel-quote-se'
 const VERSION = '0.1.0'
 const STATE_FILE = join(process.env.DSH_PROFILE_DIR || join(homedir(), '.dsh'), 'travel-quote-se-state.json')
+const LEASE_TTL = 15_000
 let serverPromise = null
 let server = null
 
@@ -29,6 +30,28 @@ const types = {
   '.json': 'application/json; charset=utf-8',
 }
 
+function sendJson(res, status, value) {
+  const body = Buffer.from(JSON.stringify(value))
+  res.writeHead(status, {
+    'content-type': 'application/json; charset=utf-8',
+    'content-length': body.length,
+    'cache-control': 'no-store',
+  })
+  res.end(body)
+}
+
+async function readJson(req, limit = 256 * 1024) {
+  let size = 0
+  const chunks = []
+  for await (const chunk of req) {
+    size += chunk.length
+    if (size > limit) throw new Error('payload too large')
+    chunks.push(chunk)
+  }
+  if (!chunks.length) return {}
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'))
+}
+
 function fileFor(pathname) {
   let path = pathname === '/' ? 'index.html' : decodeURIComponent(pathname.slice(1))
   path = normalize(path).replace(/^(\.\.(\/|\\|$))+/, '')
@@ -36,6 +59,35 @@ function fileFor(pathname) {
   if (file !== APP_DIR && !file.startsWith(APP_DIR + sep)) return null
   return file
 }
+
+let stateLock = Promise.resolve()
+let lease = { id: '', expires: 0 }
+
+function lockedStateStep(action) {
+  const next = stateLock.then(action, action)
+  stateLock = next.catch(() => {})
+  return next
+}
+
+async function readStateRecord() {
+  try {
+    const parsed = JSON.parse(await readFile(STATE_FILE, 'utf8'))
+    if (parsed && Number.isInteger(parsed.revision) && parsed.state && Array.isArray(parsed.state.quotes)) {
+      return { revision: parsed.revision, state: parsed.state }
+    }
+    if (parsed && Array.isArray(parsed.quotes)) return { revision: 0, state: parsed }
+  } catch {}
+  return { revision: 0, state: null }
+}
+
+async function writeStateRecord(record) {
+  await mkdir(dirname(STATE_FILE), { recursive: true })
+  const tmp = STATE_FILE + '.tmp'
+  await writeFile(tmp, JSON.stringify(record), 'utf8')
+  await rename(tmp, STATE_FILE)
+}
+
+function leaseActive() { return lease.id && lease.expires > Date.now() }
 
 function startServer() {
   if (serverPromise) return serverPromise
@@ -51,14 +103,10 @@ function startServer() {
         if (url.pathname === '/api/state') {
           if (req.method === 'GET') {
             try {
-              const raw = await readFile(STATE_FILE, 'utf8')
-              const body = Buffer.from(raw)
-              res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-length': body.length, 'cache-control': 'no-store' })
-              res.end(body)
-            } catch {
-              res.writeHead(204, { 'cache-control': 'no-store' })
-              res.end()
-            }
+              const record = await readStateRecord()
+              if (!record.state) { res.writeHead(204, { 'cache-control': 'no-store' }); res.end(); return }
+              sendJson(res, 200, record)
+            } catch (error) { sendJson(res, 500, { error: String(error?.message || error) }) }
             return
           }
           if (req.method !== 'PUT' && req.method !== 'POST') {
@@ -74,22 +122,52 @@ function startServer() {
             if (size > 5 * 1024 * 1024) { res.writeHead(413); res.end('state too large'); return }
             chunks.push(chunk)
           }
-          let value
+          let body
           try {
-            value = JSON.parse(Buffer.concat(chunks).toString('utf8'))
-            if (!value || !Array.isArray(value.quotes) || !Array.isArray(value.folders)) throw new Error('invalid state')
-          } catch {
-            res.writeHead(400); res.end('invalid state'); return
-          }
+            body = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+            if (!body?.state || !Array.isArray(body.state.quotes) || !Array.isArray(body.state.folders) || !Number.isInteger(body.revision)) throw new Error('invalid state')
+          } catch { res.writeHead(400); res.end('invalid state'); return }
           try {
-            await mkdir(dirname(STATE_FILE), { recursive: true })
-            const tmp = STATE_FILE + '.tmp'
-            await writeFile(tmp, JSON.stringify(value), 'utf8')
-            await rename(tmp, STATE_FILE)
-            res.writeHead(204, { 'cache-control': 'no-store' }); res.end()
-          } catch (error) {
-            res.writeHead(500); res.end(String(error?.message || error))
+            const result = await lockedStateStep(async () => {
+              const current = await readStateRecord()
+              if (body.revision !== current.revision) {
+                return { status: 409, value: { error: 'conflict', revision: current.revision, state: current.state } }
+              }
+              const next = { revision: current.revision + 1, state: body.state }
+              await writeStateRecord(next)
+              return { status: 200, value: { revision: next.revision } }
+            })
+            sendJson(res, result.status, result.value)
+          } catch (error) { sendJson(res, 500, { error: String(error?.message || error) }) }
+          return
+        }
+        if (url.pathname === '/api/lease') {
+          let body = {}
+          if (req.method === 'POST') {
+            try { body = await readJson(req, 4096) } catch {}
+            if (typeof body.id !== 'string' || !body.id) { sendJson(res, 400, { error: 'id required' }); return }
+            if (!leaseActive() || lease.id === body.id) {
+              lease = { id: body.id, expires: Date.now() + LEASE_TTL }
+              sendJson(res, 200, { owner: true, expires: Date.now() + LEASE_TTL })
+            } else {
+              sendJson(res, 409, { owner: false, id: lease.id })
+            }
+            return
           }
+          if (req.method === 'DELETE') {
+            try { body = await readJson(req, 4096) } catch {}
+            if (body.id && lease.id === body.id) lease = { id: '', expires: 0 }
+            res.writeHead(204, { 'cache-control': 'no-store' }); res.end(); return
+          }
+          res.writeHead(405); res.end('method not allowed'); return
+        }
+        if (url.pathname === '/api/lease/heartbeat') {
+          let body = {}
+          try { body = await readJson(req, 4096) } catch {}
+          if (typeof body.id !== 'string' || !body.id) { sendJson(res, 400, { error: 'id required' }); return }
+          if (leaseActive() && lease.id !== body.id) { sendJson(res, 409, { owner: false, id: lease.id }); return }
+          lease = { id: body.id, expires: Date.now() + LEASE_TTL }
+          sendJson(res, 200, { owner: true, expires: Date.now() + LEASE_TTL })
           return
         }
         if (url.pathname === '/__theme') {
