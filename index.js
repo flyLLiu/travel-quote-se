@@ -87,7 +87,7 @@ async function writeStateRecord(record) {
   await rename(tmp, STATE_FILE)
 }
 
-function leaseActive() { return lease.id && lease.expires > Date.now() }
+function leaseActive() { return Boolean(lease.id && lease.expires > Date.now()) }
 
 function startServer() {
   if (serverPromise) return serverPromise
@@ -143,6 +143,14 @@ function startServer() {
         }
         if (url.pathname === '/api/lease') {
           let body = {}
+          if (req.method === 'GET') {
+            const origin = req.headers.origin
+            const headers = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+            if (origin && /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) headers['access-control-allow-origin'] = origin
+            res.writeHead(200, headers)
+            res.end(JSON.stringify({ active: leaseActive() }))
+            return
+          }
           if (req.method === 'POST') {
             try { body = await readJson(req, 4096) } catch {}
             if (typeof body.id !== 'string' || !body.id) { sendJson(res, 400, { error: 'id required' }); return }

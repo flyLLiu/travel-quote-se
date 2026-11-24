@@ -28,6 +28,7 @@ window.__ModuleLoader__.load({
 
     function TravelQuoteAction({ wide, onOpen }) {
       const [open, setOpen] = useState(false)
+      const [blocked, setBlocked] = useState(false)
       const [pos, setPos] = useState({ left: 16, top: 80 })
       const [accent, setAccent] = useState('#12312F')
       const anchorRef = useRef(null)
@@ -71,11 +72,26 @@ window.__ModuleLoader__.load({
         setOpen((value) => !value)
       }
 
+      const requestOpen = async (action) => {
+        setOpen(false)
+        const tabs = currentTabs(ctx)
+        const existing = tabs.find((tab) => tab.tabId === savedTabId() && tab.kind === 'browser')
+        if (action !== '__external__' && existing) { onOpen(action); return }
+        try {
+          const response = await fetch(`${APP_URL}api/lease`, { cache: 'no-store' })
+          if (response.ok) {
+            const status = await response.json()
+            if (status?.active) { setBlocked(true); return }
+          }
+        } catch {}
+        onOpen(action)
+      }
+
       const item = (label, action) => h('button', {
         type: 'button',
         role: 'menuitem',
         className: 'tq-menu-item',
-        onClick: () => { setOpen(false); onOpen(action) },
+        onClick: () => { void requestOpen(action) },
       }, label)
 
       return h(React.Fragment, null,
@@ -91,6 +107,11 @@ window.__ModuleLoader__.load({
           .tq-menu-item{display:block;width:100%;padding:8px 9px;border:0;border-radius:6px;background:transparent;color:var(--dsw-alias-text-primary,#172B2C);font:inherit;font-size:12px;text-align:left;cursor:pointer}
           .tq-menu-item:hover{background:var(--dsw-alias-bg-hover,#F1F4F1)}
           .tq-menu-sep{height:1px;background:var(--dsw-alias-border,#E3E9E4);margin:3px 4px}
+          .tq-block-overlay{position:fixed;inset:0;z-index:100001;background:rgba(18,49,47,.34);display:flex;align-items:center;justify-content:center;padding:20px}
+          .tq-block-card{width:min(360px,90vw);border:1px solid #E3E9E4;border-radius:13px;background:#fff;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25);font-family:inherit;color:#172B2C;text-align:center}
+          .tq-block-card h3{margin:0;font-size:16px}
+          .tq-block-card p{margin:10px 0 18px;font-size:12px;line-height:1.7;color:#6F7D78}
+          .tq-block-ok{height:32px;padding:0 18px;border:0;border-radius:7px;background:#0C6B63;color:#fff;font:inherit;font-size:12px;cursor:pointer}
         `),
         h('div', { className: 'tq-wrap', ref: anchorRef },
           h('button', {
@@ -98,7 +119,7 @@ window.__ModuleLoader__.load({
             className: 'tq-sidebar-action',
             title: '游乐 Svelte',
             'aria-label': '打开游乐 Svelte',
-            onClick: () => onOpen(''),
+            onClick: () => { void requestOpen('') },
           },
           h('span', { className: 'tq-sidebar-mark', 'aria-hidden': true, style: { background: accent, color: markTextColor(accent) } }, 'TQ'),
           wide ? h('span', { className: 'tq-sidebar-label' }, '游乐 Svelte') : null,
@@ -117,6 +138,13 @@ window.__ModuleLoader__.load({
           item('浏览器中打开', '__external__'),
           item('新建报价', '?action=new'),
           item('继续上次报价', '?action=last'),
+        ) : null,
+        blocked ? h('div', { className: 'tq-block-overlay', role: 'presentation' },
+          h('div', { className: 'tq-block-card', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'tq-block-title' },
+            h('h3', { id: 'tq-block-title' }, '只能打开一个窗口'),
+            h('p', null, '游乐 Svelte 已在一个窗口中打开。请先关闭当前窗口，再打开新的窗口。'),
+            h('button', { type: 'button', className: 'tq-block-ok', onClick: () => setBlocked(false) }, '知道了'),
+          ),
         ) : null,
       )
     }
@@ -166,7 +194,7 @@ window.__ModuleLoader__.load({
           id: 'travel-quote-se',
           order: 100,
           label: '游乐 Svelte',
-        }, (props) => h(TravelQuoteAction, { ...props, onOpen: open })))
+        }, (props) => h(TravelQuoteAction, { ...props, ctx, onOpen: open })))
       },
     }
   },
