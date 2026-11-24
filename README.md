@@ -3,8 +3,6 @@
 DSH 插件：在 DSH 侧边栏打开本地旅游报价应用。
 
 ## 界面
-![Uploading 报价编辑页.png…]()
-![Uploading 工作台.png…]()
 
 ## 安装
 
