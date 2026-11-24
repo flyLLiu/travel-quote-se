@@ -1,7 +1,8 @@
 import { execFile } from 'node:child_process'
 import { createServer } from 'node:http'
-import { access, readFile } from 'node:fs/promises'
+import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path'
+import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 
@@ -12,6 +13,7 @@ const HOST = '127.0.0.1'
 const PORT = 17866
 const APP_ID = 'travel-quote-se'
 const VERSION = '0.1.0'
+const STATE_FILE = join(process.env.DSH_PROFILE_DIR || join(homedir(), '.dsh'), 'travel-quote-se-state.json')
 let serverPromise = null
 let server = null
 
@@ -44,6 +46,50 @@ function startServer() {
         if (url.pathname === '/__health') {
           res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
           res.end(JSON.stringify({ app: APP_ID, version: VERSION }))
+          return
+        }
+        if (url.pathname === '/api/state') {
+          if (req.method === 'GET') {
+            try {
+              const raw = await readFile(STATE_FILE, 'utf8')
+              const body = Buffer.from(raw)
+              res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-length': body.length, 'cache-control': 'no-store' })
+              res.end(body)
+            } catch {
+              res.writeHead(204, { 'cache-control': 'no-store' })
+              res.end()
+            }
+            return
+          }
+          if (req.method !== 'PUT' && req.method !== 'POST') {
+            res.writeHead(405); res.end('method not allowed'); return
+          }
+          if (req.headers.origin && !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(req.headers.origin)) {
+            res.writeHead(403); res.end('origin not allowed'); return
+          }
+          let size = 0
+          const chunks = []
+          for await (const chunk of req) {
+            size += chunk.length
+            if (size > 5 * 1024 * 1024) { res.writeHead(413); res.end('state too large'); return }
+            chunks.push(chunk)
+          }
+          let value
+          try {
+            value = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+            if (!value || !Array.isArray(value.quotes) || !Array.isArray(value.folders)) throw new Error('invalid state')
+          } catch {
+            res.writeHead(400); res.end('invalid state'); return
+          }
+          try {
+            await mkdir(dirname(STATE_FILE), { recursive: true })
+            const tmp = STATE_FILE + '.tmp'
+            await writeFile(tmp, JSON.stringify(value), 'utf8')
+            await rename(tmp, STATE_FILE)
+            res.writeHead(204, { 'cache-control': 'no-store' }); res.end()
+          } catch (error) {
+            res.writeHead(500); res.end(String(error?.message || error))
+          }
           return
         }
         if (url.pathname === '/__theme') {
