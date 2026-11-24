@@ -1,0 +1,28 @@
+{
+  "format": 1,
+  "title": {
+    "zh": "游乐插件",
+    "en": "Youle Plugins"
+  },
+  "plugins": [
+    {
+      "name": "@davidmaxlll/travel-quote-se",
+      "title": {
+        "zh": "游乐 Svelte",
+        "en": "Travel Quote Svelte"
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1795510210,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.3"
+          }
+        }
+      ]
+    }
+  ]
+}
