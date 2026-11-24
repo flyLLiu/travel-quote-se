@@ -28,4 +28,6 @@ jobs:
 
       - run: npm audit --audit-level=high
 
-      - run: npm publish --access public --tag=beta --provenance
+      - run: npm publish --access public --tag="$NPM_TAG" --provenance
+        env:
+          NPM_TAG: ${{ github.event_name == 'release' && github.event.release.prerelease && 'beta' || 'latest' }}
