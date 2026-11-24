@@ -1,0 +1,50 @@
+{
+  "name": "@davidmaxlll/travel-quote-se",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Svelte travel quotation application for DeepSeek Harness.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "app",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-sidebar-browser"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=20",
+    "dsh": ">=0.2.1-rc.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flyLLiu/travel-quote-se.git"
+  },
+  "homepage": "https://github.com/flyLLiu/travel-quote-se#readme",
+  "bugs": {
+    "url": "https://github.com/flyLLiu/travel-quote-se/issues"
+  },
+  "license": "AGPL-3.0-only"
+}

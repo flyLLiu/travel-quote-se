@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="旅价 Logo">
+  <rect x="8" y="8" width="104" height="104" rx="26" fill="#12312F"/>
+  <path d="M30 82 48 45 62 68 76 40 94 82" fill="none" stroke="#D8B978" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31 89h62" stroke="#D8B978" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  <circle cx="76" cy="32" r="4" fill="#D8B978"/>
+</svg>
