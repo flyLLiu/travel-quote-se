@@ -90,6 +90,59 @@ async function writeStateRecord(record) {
 
 function leaseActive() { return Boolean(lease.id && lease.expires > Date.now()) }
 
+function safeFileName(value) {
+  const base = (value || '客户报价.doc').replace(/[\\/:*?"<>|]/g, '_').trim()
+  return base || '客户报价.doc'
+}
+
+async function readRequestBuffer(req, limit = 30 * 1024 * 1024) {
+  const chunks = []
+  let size = 0
+  for await (const chunk of req) {
+    size += chunk.length
+    if (size > limit) throw new Error('file too large')
+    chunks.push(chunk)
+  }
+  return Buffer.concat(chunks)
+}
+
+async function chooseExportPath(name, mode) {
+  const safe = safeFileName(name)
+  if (mode === 'downloads' || process.platform !== 'darwin') {
+    return join(homedir(), 'Downloads', safe)
+  }
+  const escaped = safe.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  const script = `POSIX path of (choose file name with prompt "保存报价" default name "${escaped}")`
+  try {
+    const { stdout } = await run('/usr/bin/osascript', ['-e', script], { timeout: 300_000 })
+    const selected = stdout.trim()
+    if (!selected) throw new Error('未选择保存位置')
+    return selected
+  } catch (error) {
+    if (String(error?.message || error).includes('User canceled')) throw new Error('已取消保存')
+    throw error
+  }
+}
+
+async function saveExport(req, res, url) {
+  if (req.method !== 'POST') { res.writeHead(405); res.end('method not allowed'); return }
+  const origin = req.headers.origin
+  if (origin && !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) {
+    res.writeHead(403); res.end('origin not allowed'); return
+  }
+  try {
+    const name = decodeURIComponent(String(req.headers['x-filename'] || '客户报价.doc'))
+    const mode = String(req.headers['x-save-mode'] || 'dialog')
+    const filePath = await chooseExportPath(name, mode)
+    const data = await readRequestBuffer(req)
+    await mkdir(dirname(filePath), { recursive: true })
+    await writeFile(filePath, data)
+    sendJson(res, 200, { ok: true, path: filePath })
+  } catch (error) {
+    sendJson(res, 409, { ok: false, error: String(error?.message || error) })
+  }
+}
+
 function startServer() {
   if (serverPromise) return serverPromise
   serverPromise = new Promise((resolvePromise, reject) => {
@@ -99,6 +152,10 @@ function startServer() {
         if (url.pathname === '/__health') {
           res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
           res.end(JSON.stringify({ app: APP_ID, version: VERSION }))
+          return
+        }
+        if (url.pathname === '/api/export') {
+          await saveExport(req, res, url)
           return
         }
         if (url.pathname === '/api/state') {
