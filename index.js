@@ -14,7 +14,7 @@ const PORT = 17866
 const APP_ID = 'travel-quote-se'
 const VERSION = '0.1.0'
 const STATE_FILE = join(process.env.DSH_PROFILE_DIR || join(homedir(), '.dsh'), 'travel-quote-se-state.json')
-const LEASE_TTL = 15_000
+const LEASE_TTL = 2_000
 let serverPromise = null
 let server = null
 
