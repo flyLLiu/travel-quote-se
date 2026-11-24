@@ -22,7 +22,17 @@
             "dsh": ">=0.2.1-rc.3"
           }
         }
-      ]
+      ],
+      "description": {
+        "en": "Travel quotation app for DeepSeek Harness with local quote management, itinerary parsing, cost calculation, single-window protection, and customer previews exported as Word, Excel or PDF.",
+        "zh": "面向 DSH 的本地旅游报价应用，支持报价管理、行程识别、费用计算、单窗口保护，以及 Word、Excel、PDF 客户报价导出。"
+      },
+      "icon": "https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/icon-180.png",
+      "author": "flyLLiu",
+      "homepage": "https://github.com/flyLLiu/travel-quote-se#readme",
+      "repository": {
+        "url": "https://github.com/flyLLiu/travel-quote-se"
+      }
     }
   ]
 }
