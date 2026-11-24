@@ -6,11 +6,11 @@ DSH 插件：在 DSH 侧边栏打开本地旅游报价应用。
 
 **工作台**
 
-<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/%E5%B7%A5%E4%BD%9C%E5%8F%B0.png" alt="游乐 Svelte 工作台" width="900">
+<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/工作台.png" alt="游乐 Svelte 工作台" width="900">
 
 **报价编辑**
 
-<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/%E6%8A%A5%E4%BB%B7%E7%BC%96%E8%BE%91%E9%A1%B5.png" alt="游乐 Svelte 报价编辑页" width="900">
+<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/报价编辑页.png" alt="游乐 Svelte 报价编辑页" width="900">
  (Add interface screenshots to README)
 
 ## 安装
