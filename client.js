@@ -29,6 +29,7 @@ window.__ModuleLoader__.load({
     function TravelQuoteAction({ wide, onOpen }) {
       const [open, setOpen] = useState(false)
       const [blocked, setBlocked] = useState(false)
+      const [leaseActive, setLeaseActive] = useState(false)
       const [pos, setPos] = useState({ left: 16, top: 80 })
       const [accent, setAccent] = useState('#12312F')
       const anchorRef = useRef(null)
@@ -48,6 +49,19 @@ window.__ModuleLoader__.load({
         const timer = setInterval(loadTheme, 10000)
         window.addEventListener('focus', loadTheme)
         return () => { alive = false; clearInterval(timer); window.removeEventListener('focus', loadTheme) }
+      }, [])
+
+      useEffect(() => {
+        let alive = true
+        const check = () => {
+          fetch(`${APP_URL}api/lease`, { cache: 'no-store' })
+            .then((response) => response.ok ? response.json() : null)
+            .then((data) => { if (alive) setLeaseActive(!!data?.active) })
+            .catch(() => {})
+        }
+        check()
+        const timer = setInterval(check, 3000)
+        return () => { alive = false; clearInterval(timer) }
       }, [])
 
       useEffect(() => {
@@ -72,18 +86,12 @@ window.__ModuleLoader__.load({
         setOpen((value) => !value)
       }
 
-      const requestOpen = async (action) => {
+      const requestOpen = (action) => {
         setOpen(false)
         const tabs = currentTabs(ctx)
         const existing = tabs.find((tab) => tab.tabId === savedTabId() && tab.kind === 'browser')
         if (action !== '__external__' && existing) { onOpen(action); return }
-        try {
-          const response = await fetch(`${APP_URL}api/lease`, { cache: 'no-store' })
-          if (response.ok) {
-            const status = await response.json()
-            if (status?.active) { setBlocked(true); return }
-          }
-        } catch {}
+        if (leaseActive) { setBlocked(true); return }
         onOpen(action)
       }
 
@@ -91,7 +99,7 @@ window.__ModuleLoader__.load({
         type: 'button',
         role: 'menuitem',
         className: 'tq-menu-item',
-        onClick: () => { void requestOpen(action) },
+        onClick: () => requestOpen(action),
       }, label)
 
       return h(React.Fragment, null,
@@ -119,7 +127,7 @@ window.__ModuleLoader__.load({
             className: 'tq-sidebar-action',
             title: '游乐 Svelte',
             'aria-label': '打开游乐 Svelte',
-            onClick: () => { void requestOpen('') },
+            onClick: () => requestOpen(''),
           },
           h('span', { className: 'tq-sidebar-mark', 'aria-hidden': true, style: { background: accent, color: markTextColor(accent) } }, 'TQ'),
           wide ? h('span', { className: 'tq-sidebar-label' }, '游乐 Svelte') : null,
