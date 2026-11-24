@@ -5,7 +5,7 @@ DSH 插件：在 DSH 侧边栏打开本地 Svelte 旅游报价应用。
 ## 安装
 
 ```bash
-npm install @davidmaxlll/travel-quote-se@beta
+npm install travel-quote-se@beta
 ```
 
 ## 使用

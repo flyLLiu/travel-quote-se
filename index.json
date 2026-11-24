@@ -6,7 +6,7 @@
   },
   "plugins": [
     {
-      "name": "@davidmaxlll/travel-quote-se",
+      "name": "travel-quote-se",
       "title": {
         "zh": "游乐 Svelte",
         "en": "Travel Quote Svelte"

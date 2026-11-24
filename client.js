@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: '@davidmaxlll/travel-quote-se',
+  id: 'travel-quote-se',
   factory(require) {
     const React = require('react')
     const h = React.createElement

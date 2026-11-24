@@ -1,5 +1,5 @@
 {
-  "name": "@davidmaxlll/travel-quote-se",
+  "name": "travel-quote-se",
   "version": "0.1.0",
   "type": "module",
   "description": "Svelte travel quotation application for DeepSeek Harness.",
