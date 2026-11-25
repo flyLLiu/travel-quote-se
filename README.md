@@ -1,67 +1,67 @@
-[English](README.md) | [简体中文](README.zh-CN.md)
+[简体中文](https://github.com/flyLLiu/travel-quote-se/blob/main/README.md) | [English](https://github.com/flyLLiu/travel-quote-se/blob/main/README.en.md)
 
-# Youle · Travel Quote
+# 游乐 · 旅行报价
 
-A local-first travel quotation app for DeepSeek Harness. It opens from the DSH sidebar and keeps quote data in the local browser.
+本地优先的旅游报价应用，可作为 DSH 插件在侧边栏打开，报价数据保存在当前浏览器。
 
-## Screenshots
+## 界面预览
 
-**Workbench**
+**工作台**
 
-<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/workbench-en.png" alt="Youle Workbench" width="900">
+<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/工作台.png" alt="游乐工作台" width="900">
 
-**Quote Editor**
+**报价编辑**
 
-<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/editor-en.png" alt="Youle Quote Editor" width="900">
+<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/报价编辑页.png" alt="游乐报价编辑" width="900">
 
-## Features
+## 功能
 
-- Local quote management
-- Folder organization
-- Itinerary parsing
-- Cost and margin calculation
-- Single-window protection
-- Customer preview
-- Word, Excel and PDF export
-- Chinese and English interface
+- 本地报价管理
+- 文件夹整理
+- 行程识别
+- 成本与利润率计算
+- 单窗口保护
+- 客户版预览
+- Word、Excel、PDF 导出
+- 中文和英文界面
 
-## Install
+## 安装
 
 ```bash
 npm install travel-quote
 ```
 
-Open **youle-se** from the DSH sidebar, or run:
+安装后点击 DSH 侧边栏「游乐-se」，或使用 DSH 命令：
 
 ```text
 /tqse
 ```
 
-App URL:
+应用地址：
 
 ```text
 http://127.0.0.1:17866/
 ```
 
-## Language
+## 语言
 
-The interface follows the system language by default:
-
-```text
-Chinese system → 简体中文
-Other systems  → English
-```
-
-Change it in:
+界面语言默认跟随系统语言：
 
 ```text
-Settings → Appearance → Language
+中文系统 → 简体中文
+其他系统 → English
 ```
 
-## Data
+可在设置中切换：
 
-Quote data stays in the local browser. The app starts with empty data.
+```text
+设置 → 界面 → 界面语言
+```
 
-## License
+## 数据
 
-AGPL-3.0-only.
+报价数据仅保存在当前浏览器，从空数据开始。
+
+## 许可
+
+AGPL-3.0-only。
