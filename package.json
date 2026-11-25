@@ -2,7 +2,7 @@
   "name": "travel-quote",
   "version": "0.1.12",
   "type": "module",
-  "description": "Svelte travel quotation application for DeepSeek Harness.",
+  "description": "Local-first travel quotation app for DeepSeek Harness.",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
