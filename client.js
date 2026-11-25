@@ -10,17 +10,17 @@ window.__ModuleLoader__.load({
     function sidebarText(locale) {
       const language = String(locale || SYSTEM_LANGUAGE).toLowerCase()
       if (language.startsWith('zh')) return {
-        label: '游乐 Svelte',
-        open: '打开游乐 Svelte',
-        actions: '游乐 Svelte 快捷动作',
+        label: '游乐-se',
+        open: '打开游乐-se',
+        actions: '游乐-se 快捷动作',
         external: '浏览器中打开',
         newQuote: '新建报价',
         lastQuote: '继续上次报价',
       }
       return {
-        label: 'Youle Svelte',
-        open: 'Open Youle Svelte',
-        actions: 'Youle Svelte quick actions',
+        label: 'youle-se',
+        open: 'Open youle-se',
+        actions: 'youle-se quick actions',
         external: 'Open in Browser',
         newQuote: 'New Quote',
         lastQuote: 'Resume Last Quote',
