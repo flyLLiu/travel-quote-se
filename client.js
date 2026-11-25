@@ -6,6 +6,24 @@ window.__ModuleLoader__.load({
     const { useEffect, useRef, useState } = React
     const APP_URL = 'http://127.0.0.1:17866/'
     const TAB_KEY = 'tq-se.sidebar.tabId'
+    const SYSTEM_LANGUAGE = (navigator.languages?.[0] || navigator.language || 'en-US').toLowerCase()
+    const SIDEBAR_TEXT = SYSTEM_LANGUAGE.startsWith('zh')
+      ? {
+          label: SIDEBAR_TEXT.label,
+          open: '打开游乐 Svelte',
+          actions: '游乐 Svelte 快捷动作',
+          external: '浏览器中打开',
+          newQuote: '新建报价',
+          lastQuote: '继续上次报价',
+        }
+      : {
+          label: 'Youle Svelte',
+          open: 'Open Youle Svelte',
+          actions: 'Youle Svelte quick actions',
+          external: 'Open in Browser',
+          newQuote: 'New Quote',
+          lastQuote: 'Resume Last Quote',
+        }
     const markTextColor = (hex) => {
       const value = String(hex || '').replace('#', '')
       if (!/^[0-9a-f]{6}$/i.test(value)) return '#fff'
@@ -96,27 +114,27 @@ window.__ModuleLoader__.load({
           h('button', {
             type: 'button',
             className: 'tq-sidebar-action',
-            title: '游乐 Svelte',
-            'aria-label': '打开游乐 Svelte',
+            title: SIDEBAR_TEXT.label,
+            'aria-label': SIDEBAR_TEXT.open,
             onClick: () => onOpen(''),
           },
           h('span', { className: 'tq-sidebar-mark', 'aria-hidden': true, style: { background: accent, color: markTextColor(accent) } }, 'TQ'),
-          wide ? h('span', { className: 'tq-sidebar-label' }, '游乐 Svelte') : null,
+          wide ? h('span', { className: 'tq-sidebar-label' }, SIDEBAR_TEXT.label) : null,
           ),
           h('button', {
             type: 'button',
             className: 'tq-sidebar-caret',
-            title: '快捷动作',
-            'aria-label': '游乐 Svelte 快捷动作',
+            title: SIDEBAR_TEXT.actions,
+            'aria-label': SIDEBAR_TEXT.actions,
             'aria-haspopup': 'menu',
             'aria-expanded': open,
             onClick: toggle,
           }, '▾'),
         ),
         open ? h('div', { className: 'tq-menu', role: 'menu', ref: menuRef, style: pos },
-          item('浏览器中打开', '__external__'),
-          item('新建报价', '?action=new'),
-          item('继续上次报价', '?action=last'),
+          item(SIDEBAR_TEXT.external, '__external__'),
+          item(SIDEBAR_TEXT.newQuote, '?action=new'),
+          item(SIDEBAR_TEXT.lastQuote, '?action=last'),
         ) : null,
       )
     }
@@ -165,7 +183,7 @@ window.__ModuleLoader__.load({
           name: 'sidebar.footer.action',
           id: 'travel-quote',
           order: 100,
-          label: '游乐 Svelte',
+          label: SIDEBAR_TEXT.label,
         }, (props) => h(TravelQuoteAction, { ...props, ctx, onOpen: open })))
       },
     }
