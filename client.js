@@ -47,22 +47,27 @@ window.__ModuleLoader__.load({
       try { if (tabId) localStorage.setItem(TAB_KEY, tabId) } catch {}
     }
 
-    function TravelQuoteAction({ wide, onOpen }) {
+    function TravelQuoteAction({ wide, onOpen, onLocaleChange, initialLocale = '' }) {
       const [open, setOpen] = useState(false)
       const [pos, setPos] = useState({ left: 16, top: 80 })
       const [accent, setAccent] = useState('#12312F')
-      const [locale, setLocale] = useState(null)
+      const [locale, setLocale] = useState(initialLocale || null)
       const text = sidebarText(locale)
       const anchorRef = useRef(null)
       const menuRef = useRef(null)
 
       useEffect(() => {
         let alive = true
+        let lastLocale = initialLocale || ''
         const loadLocale = () => {
           fetch(APP_URL + '__locale', { cache: 'no-store' })
             .then((response) => response.ok ? response.json() : null)
             .then((data) => {
-              if (alive && (data?.locale === 'zh-CN' || data?.locale === 'en-US')) setLocale(data.locale)
+              if (!alive || (data?.locale !== 'zh-CN' && data?.locale !== 'en-US')) return
+              if (data.locale === lastLocale) return
+              lastLocale = data.locale
+              setLocale(data.locale)
+              onLocaleChange?.(data.locale)
             })
             .catch(() => {})
         }
@@ -200,12 +205,16 @@ window.__ModuleLoader__.load({
           }
           window.open(url, 'travel-quote')
         }
-        const register = (initialLocale) => ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
-          name: 'sidebar.footer.action',
-          id: 'travel-quote',
-          order: 100,
-          label: sidebarText(initialLocale).label,
-        }, (props) => h(TravelQuoteAction, { ...props, ctx, onOpen: open })))
+        let unregister = null
+        const register = (initialLocale) => {
+          if (typeof unregister === 'function') unregister()
+          unregister = ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
+            name: 'sidebar.footer.action',
+            id: 'travel-quote',
+            order: 100,
+            label: sidebarText(initialLocale).label,
+          }, (props) => h(TravelQuoteAction, { ...props, ctx, onOpen: open, onLocaleChange: register, initialLocale })))
+        }
         fetch(APP_URL + '__locale', { cache: 'no-store' })
           .then((response) => response.ok ? response.json() : null)
           .then((data) => register(data?.locale))
