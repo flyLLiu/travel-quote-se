@@ -6,15 +6,15 @@
   },
   "plugins": [
     {
-      "name": "travel-quote-se",
+      "name": "travel-quote",
       "title": {
         "zh": "游乐 Svelte",
         "en": "Travel Quote Svelte"
       },
       "versions": [
         {
-          "version": "0.1.11",
-          "publishTimestamp": 1795525791,
+          "version": "0.1.12",
+          "publishTimestamp": 1795582154,
           "source": {
             "type": "npm"
           },
