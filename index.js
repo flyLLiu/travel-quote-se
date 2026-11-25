@@ -18,6 +18,7 @@ const STATE_FILE = join(process.env.DSH_PROFILE_DIR || join(homedir(), '.dsh'), 
 const LEASE_TTL = 2_000
 let serverPromise = null
 let server = null
+let appLocale = 'zh-CN'
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -152,6 +153,24 @@ function startServer() {
         if (url.pathname === '/__health') {
           res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
           res.end(JSON.stringify({ app: APP_ID, version: VERSION }))
+          return
+        }
+        if (url.pathname === '/__locale') {
+          res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'access-control-allow-origin': '*' })
+          res.end(JSON.stringify({ locale: appLocale }))
+          return
+        }
+        if (url.pathname === '/api/locale') {
+          if (req.method !== 'POST') { res.writeHead(405); res.end('method not allowed'); return }
+          try {
+            const body = await readJson(req, 4096)
+            if (body.locale === 'zh-CN' || body.locale === 'en-US') {
+              appLocale = body.locale
+              sendJson(res, 200, { ok: true, locale: appLocale })
+            } else {
+              sendJson(res, 400, { error: 'invalid locale' })
+            }
+          } catch { sendJson(res, 400, { error: 'invalid request' }) }
           return
         }
         if (url.pathname === '/api/export') {

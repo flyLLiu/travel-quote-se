@@ -7,23 +7,26 @@ window.__ModuleLoader__.load({
     const APP_URL = 'http://127.0.0.1:17866/'
     const TAB_KEY = 'tq-se.sidebar.tabId'
     const SYSTEM_LANGUAGE = (navigator.languages?.[0] || navigator.language || 'en-US').toLowerCase()
-    const SIDEBAR_TEXT = SYSTEM_LANGUAGE.startsWith('zh')
-      ? {
-          label: SIDEBAR_TEXT.label,
-          open: '打开游乐 Svelte',
-          actions: '游乐 Svelte 快捷动作',
-          external: '浏览器中打开',
-          newQuote: '新建报价',
-          lastQuote: '继续上次报价',
-        }
-      : {
-          label: 'Youle Svelte',
-          open: 'Open Youle Svelte',
-          actions: 'Youle Svelte quick actions',
-          external: 'Open in Browser',
-          newQuote: 'New Quote',
-          lastQuote: 'Resume Last Quote',
-        }
+    function sidebarText(locale) {
+      const language = String(locale || SYSTEM_LANGUAGE).toLowerCase()
+      if (language.startsWith('zh')) return {
+        label: '游乐 Svelte',
+        open: '打开游乐 Svelte',
+        actions: '游乐 Svelte 快捷动作',
+        external: '浏览器中打开',
+        newQuote: '新建报价',
+        lastQuote: '继续上次报价',
+      }
+      return {
+        label: 'Youle Svelte',
+        open: 'Open Youle Svelte',
+        actions: 'Youle Svelte quick actions',
+        external: 'Open in Browser',
+        newQuote: 'New Quote',
+        lastQuote: 'Resume Last Quote',
+      }
+    }
+    const SYSTEM_TEXT = sidebarText()
     const markTextColor = (hex) => {
       const value = String(hex || '').replace('#', '')
       if (!/^[0-9a-f]{6}$/i.test(value)) return '#fff'
@@ -48,8 +51,26 @@ window.__ModuleLoader__.load({
       const [open, setOpen] = useState(false)
       const [pos, setPos] = useState({ left: 16, top: 80 })
       const [accent, setAccent] = useState('#12312F')
+      const [locale, setLocale] = useState(null)
+      const text = sidebarText(locale)
       const anchorRef = useRef(null)
       const menuRef = useRef(null)
+
+      useEffect(() => {
+        let alive = true
+        const loadLocale = () => {
+          fetch(APP_URL + '__locale', { cache: 'no-store' })
+            .then((response) => response.ok ? response.json() : null)
+            .then((data) => {
+              if (alive && (data?.locale === 'zh-CN' || data?.locale === 'en-US')) setLocale(data.locale)
+            })
+            .catch(() => {})
+        }
+        loadLocale()
+        const localeTimer = setInterval(loadLocale, 3000)
+        window.addEventListener('focus', loadLocale)
+        return () => { alive = false; clearInterval(localeTimer); window.removeEventListener('focus', loadLocale) }
+      }, [])
 
       useEffect(() => {
         let alive = true
@@ -114,27 +135,27 @@ window.__ModuleLoader__.load({
           h('button', {
             type: 'button',
             className: 'tq-sidebar-action',
-            title: SIDEBAR_TEXT.label,
-            'aria-label': SIDEBAR_TEXT.open,
+            title: text.label,
+            'aria-label': text.open,
             onClick: () => onOpen(''),
           },
           h('span', { className: 'tq-sidebar-mark', 'aria-hidden': true, style: { background: accent, color: markTextColor(accent) } }, 'TQ'),
-          wide ? h('span', { className: 'tq-sidebar-label' }, SIDEBAR_TEXT.label) : null,
+          wide ? h('span', { className: 'tq-sidebar-label' }, text.label) : null,
           ),
           h('button', {
             type: 'button',
             className: 'tq-sidebar-caret',
-            title: SIDEBAR_TEXT.actions,
-            'aria-label': SIDEBAR_TEXT.actions,
+            title: text.actions,
+            'aria-label': text.actions,
             'aria-haspopup': 'menu',
             'aria-expanded': open,
             onClick: toggle,
           }, '▾'),
         ),
         open ? h('div', { className: 'tq-menu', role: 'menu', ref: menuRef, style: pos },
-          item(SIDEBAR_TEXT.external, '__external__'),
-          item(SIDEBAR_TEXT.newQuote, '?action=new'),
-          item(SIDEBAR_TEXT.lastQuote, '?action=last'),
+          item(text.external, '__external__'),
+          item(text.newQuote, '?action=new'),
+          item(text.lastQuote, '?action=last'),
         ) : null,
       )
     }
@@ -179,12 +200,16 @@ window.__ModuleLoader__.load({
           }
           window.open(url, 'travel-quote')
         }
-        ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
+        const register = (initialLocale) => ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
           name: 'sidebar.footer.action',
           id: 'travel-quote',
           order: 100,
-          label: SIDEBAR_TEXT.label,
+          label: sidebarText(initialLocale).label,
         }, (props) => h(TravelQuoteAction, { ...props, ctx, onOpen: open })))
+        fetch(APP_URL + '__locale', { cache: 'no-store' })
+          .then((response) => response.ok ? response.json() : null)
+          .then((data) => register(data?.locale))
+          .catch(() => register())
       },
     }
   },
