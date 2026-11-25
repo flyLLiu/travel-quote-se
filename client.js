@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: 'travel-quote-se',
+  id: 'travel-quote',
   factory(require) {
     const React = require('react')
     const h = React.createElement
@@ -127,7 +127,7 @@ window.__ModuleLoader__.load({
         let openingTab = false
         const open = (query = '') => {
           if (query === '__external__') {
-            window.open(APP_URL, 'travel-quote-se')
+            window.open(APP_URL, 'travel-quote')
             return
           }
           const url = query ? `${APP_URL}?embed=1&${query.slice(1)}` : `${APP_URL}?embed=1`
@@ -159,11 +159,11 @@ window.__ModuleLoader__.load({
           } catch (error) {
             console.warn('Travel Quote SE sidebar browser failed, falling back to a new tab', error)
           }
-          window.open(url, 'travel-quote-se')
+          window.open(url, 'travel-quote')
         }
         ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
           name: 'sidebar.footer.action',
-          id: 'travel-quote-se',
+          id: 'travel-quote',
           order: 100,
           label: '游乐 Svelte',
         }, (props) => h(TravelQuoteAction, { ...props, ctx, onOpen: open })))

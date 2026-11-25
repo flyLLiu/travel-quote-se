@@ -15,7 +15,7 @@ DSH 插件：在 DSH 侧边栏打开本地旅游报价应用。
 ## 安装
 
 ```bash
-npm install travel-quote-se
+npm install travel-quote
 ```
 
 ## 使用

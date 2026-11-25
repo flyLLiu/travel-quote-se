@@ -1,6 +1,6 @@
 {
-  "name": "travel-quote-se",
-  "version": "0.1.11",
+  "name": "travel-quote",
+  "version": "0.1.12",
   "type": "module",
   "description": "Svelte travel quotation application for DeepSeek Harness.",
   "exports": {
