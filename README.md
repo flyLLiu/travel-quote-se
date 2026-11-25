@@ -14,6 +14,14 @@ A local-first travel quotation app for DeepSeek Harness.
 
 <img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/报价编辑页.png" alt="Youle Quote Editor" width="900">
 
+**工作台（英文）/ Workbench (English)**
+
+<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/workbench-en.png" alt="Youle Workbench in English" width="900">
+
+**报价编辑（英文）/ Quote Editor (English)**
+
+<img src="https://raw.githubusercontent.com/flyLLiu/travel-quote-se/main/assets/screenshots/editor-en.png" alt="Youle Quote Editor in English" width="900">
+
 ## 功能 / Features
 
 - 本地报价管理 / Local quote management
@@ -31,13 +39,13 @@ A local-first travel quotation app for DeepSeek Harness.
 npm install travel-quote
 ```
 
-安装后点击 DSH 侧边栏「游乐 Svelte」，或使用 DSH 命令：
+安装后点击 DSH 侧边栏「游乐-se」，或使用 DSH 命令：
 
 ```text
 /tqse
 ```
 
-After installation, open **Youle Svelte** from the DSH sidebar, or run `/tqse`.
+After installation, open **youle-se** from the DSH sidebar, or run `/tqse`.
 
 应用地址 / App URL：
 
